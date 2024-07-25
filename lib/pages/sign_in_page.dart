@@ -1,6 +1,7 @@
 import 'package:expenses/pages/utils/page_navigation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'home_page.dart';
 import 'package:expenses/pages/utils/snackbar.dart';
@@ -41,6 +42,7 @@ class _SignInPageState extends State<SignInPage> {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
+        SnackBarHelper.failureSnackBar(context, 'Login was canceled');
         return null;
       }
 
@@ -54,10 +56,19 @@ class _SignInPageState extends State<SignInPage> {
       final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       return userCredential.user;
 
+    }on PlatformException catch (e) {
+      SnackBarHelper.failureSnackBar(context, '${e.message}');
+      print('PlatformException: ${e.message}');
+    } on FirebaseAuthException catch (e) {
+      SnackBarHelper.failureSnackBar(context, '${e.message}');
+      print('FirebaseAuthException: ${e.message}');
     }
     catch (e) {
+      SnackBarHelper.failureSnackBar(context, 'Unexpected error, please try again');
       print('Unexpected error: $e');
     }
+    await FirebaseAuth.instance.signOut();
+    await _googleSignIn.signOut();
 
     return null;
   }
@@ -104,7 +115,6 @@ class _SignInPageState extends State<SignInPage> {
                       SnackBarHelper.successSnackBar(context, "Login was succeed!");
                       navigateToPage(context, HomePage(user: user));
                     }else {
-                      SnackBarHelper.failureSnackBar(context, "Login was failed!");
                       setState(() {
                         _isSigningIn = false;
                       });
