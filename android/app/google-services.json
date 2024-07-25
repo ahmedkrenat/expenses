@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "338209384346",
+    "project_id": "expences-7364a",
+    "storage_bucket": "expences-7364a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338209384346:android:25301322bd9635b2c57c23",
+        "android_client_info": {
+          "package_name": "com.example.expences"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338209384346-h1olmapppvv7740qv4pvuglg3b82ie0a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.expences",
+            "certificate_hash": "546c9a2585147e5e33a35a397bd7345ed58f7ed7"
+          }
+        },
+        {
+          "client_id": "338209384346-s957d9vfvjcsejlfu5fcug1he6vu39jn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtKjwpAqV-WSVrkIHfSluQ6z3Qi2Y1Pkk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "338209384346-s957d9vfvjcsejlfu5fcug1he6vu39jn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
