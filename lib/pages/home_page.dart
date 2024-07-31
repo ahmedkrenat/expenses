@@ -10,7 +10,6 @@ class HomePage extends StatelessWidget {
   final User user;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
   HomePage({required this.user});
 
   Future<void> addExpense(User user, String description, double amount) async {
@@ -47,6 +46,7 @@ class HomePage extends StatelessWidget {
               stream: firestore
                   .collection('expenses')
                   .where('userId', isEqualTo: user.uid)
+                  .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
