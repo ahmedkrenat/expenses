@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expenses/pages/sign_in_page.dart';
-import 'package:expenses/pages/utils/Expense.dart';
-import 'package:expenses/pages/utils/page_navigation.dart';
+import 'package:expenses/app/pages/login/sign_in_page.dart';
+import 'package:expenses/domain/entities/Expense.dart';
+import 'package:expenses/app/utils/page_navigation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';

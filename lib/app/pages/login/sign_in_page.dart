@@ -1,10 +1,10 @@
-import 'package:expenses/pages/utils/page_navigation.dart';
+import 'package:expenses/app/utils/page_navigation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'home_page.dart';
-import 'package:expenses/pages/utils/snackbar.dart';
+import '../home/home_page.dart';
+import 'package:expenses/app/utils/snackbar.dart';
 
 
 class AuthGate extends StatelessWidget {
