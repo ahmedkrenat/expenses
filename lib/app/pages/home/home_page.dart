@@ -28,7 +28,7 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: ExpensesViewer(user: user,),
+      body: ExpensesListViewer(user: user,),
       floatingActionButton: NewExpenseButton(user: user,),
     );
   }

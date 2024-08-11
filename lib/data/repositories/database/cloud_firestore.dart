@@ -5,15 +5,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class CloudFirestore {
 
-  static Future<void> saveExpense(User user, String description, double amount) async {
+  static Future<void> deleteExpense(Expense expense) async {
     final firestore = FirebaseFirestore.instance;
-    Expense expense = Expense(
-      id: '', // ID will be set by Firestore
-      description: description,
-      amount: amount,
-      timestamp: Timestamp.now(),
-      userId: user.uid,
-    );
+    await firestore
+        .collection(Constants.expensesCollectionName)
+        .doc(expense.id)
+        .delete();
+  }
+
+  static Future<void> updateExpense(Expense expense) async {
+    final firestore = FirebaseFirestore.instance;
+    await firestore
+        .collection(Constants.expensesCollectionName)
+        .doc(expense.id)
+        .set(expense.toMap());
+  }
+
+  static Future<void> saveNewExpense(Expense expense) async {
+    final firestore = FirebaseFirestore.instance;
 
     await firestore.collection(Constants.expensesCollectionName).add(expense.toMap());
   }
