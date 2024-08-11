@@ -21,7 +21,7 @@ class CloudFirestore {
         .set(expense.toMap());
   }
 
-  static Future<void> saveNewExpense(Expense expense) async {
+  static Future<void> addExpense(Expense expense) async {
     final firestore = FirebaseFirestore.instance;
 
     await firestore.collection(Constants.expensesCollectionName).add(expense.toMap());

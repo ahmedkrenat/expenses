@@ -55,7 +55,7 @@ class _ExpensesListViewer extends State<ExpensesListViewer>{
           label: Constants.undo,
           onPressed: () {
             setState(() async {
-              await CloudFirestore.saveNewExpense(expense);
+              await CloudFirestore.addExpense(expense);
             });
           },
         ),

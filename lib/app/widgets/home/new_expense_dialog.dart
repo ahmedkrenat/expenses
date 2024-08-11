@@ -67,7 +67,7 @@ class _NewExpenseDialogState extends State<NewExpenseDialog> {
         userId: widget.user.uid
     );
 
-    await CloudFirestore.saveNewExpense(expense);
+    await CloudFirestore.addExpense(expense);
     Navigator.of(context).pop();
   }
 
