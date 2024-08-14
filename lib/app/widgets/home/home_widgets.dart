@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expenses/app/widgets/home/expense_details_dialog.dart';
 import 'package:expenses/app/widgets/home/new_expense_dialog.dart';
 import 'package:expenses/data/constants.dart';
 import 'package:expenses/data/repositories/database/cloud_firestore.dart';
@@ -39,6 +40,15 @@ class _ExpensesListViewer extends State<ExpensesListViewer>{
       context: context,
       builder: (context) {
         return EditExpenseDialog(expense: expense);
+      },
+    );
+  }
+
+  void _showExpenseDetails(BuildContext context, Expense expense){
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ExpenseDetailsDialog(expense: expense);
       },
     );
   }
@@ -121,8 +131,14 @@ class _ExpensesListViewer extends State<ExpensesListViewer>{
                       '\$${expense.amount.toStringAsFixed(1)}',
                       style: Constants.itemAmountTextStyle,
                     ),
-                    trailing: Icon(Icons.edit, color: Colors.indigo),
-                    onTap: () => _editExpense(context, expense),
+                    trailing: GestureDetector(
+                      onTap: () => _editExpense(context, expense),
+                      child: Icon(
+                        Icons.edit,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    onTap: () => _showExpenseDetails(context, expense),
                   ),
                 ),
               ),

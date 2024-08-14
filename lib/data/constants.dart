@@ -19,8 +19,11 @@ class Constants {
   static const String deleted = 'deleted';
   static const String undo = 'Undo';
   static const String editExpense = 'Edit Expense';
+  static const String expenseDetails = 'Expense details';
   static const String description = 'Description';
   static const String amount = 'Amount';
+  static const String date = 'Date';
+  static const String category = 'Category';
   static const String cancel = 'Cancel';
   static const String save = 'Save';
   static const String addNewExpense = 'Add new expense';
