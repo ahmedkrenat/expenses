@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenses/app/widgets/home/expense_details_dialog.dart';
-import 'package:expenses/app/widgets/home/new_expense_dialog.dart';
 import 'package:expenses/data/constants.dart';
 import 'package:expenses/data/repositories/database/cloud_firestore.dart';
 import 'package:expenses/domain/entities/Expense.dart';
@@ -8,20 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'edit_expense_dialog.dart';
-
-class SignOutButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  SignOutButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.exit_to_app),
-      onPressed: onPressed,
-    );
-  }
-}
 
 class ExpensesListViewer extends StatefulWidget {
   final User user;
@@ -146,27 +131,6 @@ class _ExpensesListViewer extends State<ExpensesListViewer>{
           },
         );
       },
-    );
-  }
-}
-
-class NewExpenseButton extends StatelessWidget {
-  final User user;
-
-  NewExpenseButton({required this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: () async {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return  NewExpenseDialog(user: user);
-          },
-        );
-      },
-      child: Icon(Icons.add),
     );
   }
 }
