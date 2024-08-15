@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'home_analytics_tab.dart';
 
 class HomePageWidget extends StatelessWidget{
   final User user;
@@ -25,7 +26,7 @@ class HomePageWidget extends StatelessWidget{
           bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.monetization_on)),
-              Tab(icon: Icon(Icons.analytics)),
+              Tab(icon: Icon(Icons.analytics_rounded)),
             ],
           ),
           actions: [
@@ -42,7 +43,7 @@ class HomePageWidget extends StatelessWidget{
         body: TabBarView(
           children: [
             ExpensesListViewer(user: user,),
-            Icon(Icons.analytics),
+            MonthlyExpenseStatistics(user: user,),
           ],
         ),
       ),
