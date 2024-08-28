@@ -6,6 +6,7 @@ import 'package:expenses/domain/entities/Expense.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'confirmation_dialog.dart';
 import 'edit_expense_dialog.dart';
 
 class ExpensesListViewer extends StatefulWidget {
@@ -58,6 +59,27 @@ class _ExpensesListViewer extends State<ExpensesListViewer>{
     );
   }
 
+  void _showConfirmationDialog(BuildContext context, Expense expense) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ConfirmationDialog(
+          title: 'Confirm Action',
+          content: 'Are you sure you want to delete this expense?',
+          actionText: 'Delete',
+          onConfirm: () {
+            Navigator.of(context).pop();
+            _deleteExpense(context, expense);
+          },
+          onCancel: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context){
     return StreamBuilder<QuerySnapshot>(
@@ -80,57 +102,53 @@ class _ExpensesListViewer extends State<ExpensesListViewer>{
           itemBuilder: (context, index) {
             Expense expense = expenses[index];
 
-            return Dismissible(
-              key: Key(expense.id),
-              background: Container(
-                color: Colors.red,
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                alignment: Alignment.centerRight,
-                child: Icon(
-                  Icons.delete,
-                  color: Colors.white,
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              child: Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ),
-              direction: DismissDirection.endToStart,
-              onDismissed: (direction) {
-                _deleteExpense(context, expense);
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 1.0),
+                  leading: Icon(
+                    Icons.monetization_on,
+                    color: Colors.green,
                   ),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 1.0),
-                    leading: Icon(
-                      Icons.monetization_on,
-                      color: Colors.green,
-                    ),
-                    title: Text(
-                      expense.description,
-                      style: Constants.itemDescTextStyle,
-                    ),
-                    subtitle: Text(
-                      '\$${expense.amount.toStringAsFixed(1)}',
-                      style: Constants.itemAmountTextStyle,
-                    ),
-                    trailing: GestureDetector(
-                      onTap: () => _editExpense(context, expense),
-                      child: Icon(
-                        Icons.edit,
-                        color: Colors.indigo,
+                  title: Text(
+                    expense.description,
+                    style: Constants.itemDescTextStyle,
+                  ),
+                  subtitle: Text(
+                    '\$${expense.amount.toStringAsFixed(1)}',
+                    style: Constants.itemAmountTextStyle,
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.edit,
+                          color: Colors.indigo.shade400,
+                        ),
+                        onPressed: () => _editExpense(context, expense),
                       ),
-                    ),
-                    onTap: () => _showExpenseDetails(context, expense),
+                      IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.red.shade400,
+                        ),
+                        onPressed: () => _showConfirmationDialog(context, expense),
+                      ),
+                    ],
                   ),
+                  onTap: () => _showExpenseDetails(context, expense),
                 ),
               ),
             );
           },
         );
-      },
+        },
     );
   }
 }
