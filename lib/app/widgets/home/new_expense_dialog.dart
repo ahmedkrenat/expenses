@@ -17,9 +17,11 @@ class NewExpenseDialog extends StatefulWidget {
 class _NewExpenseDialogState extends State<NewExpenseDialog> {
   late TextEditingController _descController;
   late TextEditingController _amountController;
+  late TextEditingController _installmentsController;
   final TextEditingController _dateTimeController = TextEditingController();
   bool _isDescEmpty = false;
   bool _isAmountEmpty = false;
+  bool _isInstallmentsEmpty = false;
   DateTime _selectedDateTime = DateTime.now();
 
   @override
@@ -27,6 +29,7 @@ class _NewExpenseDialogState extends State<NewExpenseDialog> {
     super.initState();
     _descController = TextEditingController(text: '');
     _amountController = TextEditingController(text: '');
+    _installmentsController = TextEditingController(text: '1');
     _dateTimeController.text = _selectedDateTime.toLocal().toString().split('.')[0];
   }
 
@@ -53,24 +56,57 @@ class _NewExpenseDialogState extends State<NewExpenseDialog> {
     );
   }
 
+  List<Timestamp> _getFirstOfNextXMonths(Timestamp timestamp, int x) {
+    DateTime dateTime = timestamp.toDate();
+    List<Timestamp> result = [];
+    result.add(timestamp);
+
+    for (int i = 1; i < x; i++) {
+      int year = dateTime.year;
+      int month = dateTime.month + i;
+
+      if (month > 12) {
+        year += (month - 1) ~/ 12;
+        month = month % 12 == 0 ? 12 : month % 12;
+      }
+
+      DateTime firstDayOfMonth = DateTime(year, month, 1);
+
+      result.add(Timestamp.fromDate(firstDayOfMonth));
+    }
+
+    return result;
+  }
+
   void _handleButtonClick() async{
     setState(() {
       _isDescEmpty = _descController.text.isEmpty;
-      _isAmountEmpty = _amountController.text.isEmpty;
+      _isAmountEmpty = _amountController.text.isEmpty || int.parse((_amountController.text)) == 0;
+      _isInstallmentsEmpty = _installmentsController.text.isEmpty || int.parse((_installmentsController.text)) == 0;
     });
 
     if(_isDescEmpty || _isAmountEmpty){
       return;
     }
 
-    Expense expense = Expense(id: '',
-        description: _descController.text,
-        amount: double.parse(_amountController.text),
-        timestamp: Timestamp.fromDate(_selectedDateTime ),
-        userId: widget.user.uid
-    );
+    Expense expense;
+    Timestamp timestamp = Timestamp.fromDate(_selectedDateTime);;
+    int installments = int.parse((_installmentsController.text));
+    var amount = double.parse(_amountController.text) / installments;
+    List<Timestamp> timeStamps = _getFirstOfNextXMonths(timestamp, installments);
 
-    await CloudFirestore.addExpense(expense);
+    for(int i=0; i<installments; i++){
+      expense = Expense(id: '',
+            description: _descController.text,
+            amount: amount,
+            timestamp: timeStamps[i],
+            userId: widget.user.uid
+        );
+
+      await CloudFirestore.addExpense(expense);
+    }
+
+
     Navigator.of(context).pop();
   }
 
@@ -132,6 +168,12 @@ class _NewExpenseDialogState extends State<NewExpenseDialog> {
               ),
             ),
             readOnly: true,
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: _installmentsController,
+            decoration: _buildInputDecoration(Constants.installments, _isInstallmentsEmpty),
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
           ),
         ],
       ),

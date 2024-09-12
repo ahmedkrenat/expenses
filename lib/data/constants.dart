@@ -22,6 +22,7 @@ class Constants {
   static const String expenseDetails = 'Expense details';
   static const String description = 'Description';
   static const String amount = 'Amount';
+  static const String installments = 'Installments';
   static const String date = 'Date';
   static const String category = 'Category';
   static const String cancel = 'Cancel';
