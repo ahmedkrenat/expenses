@@ -44,19 +44,19 @@ class _ExpensesListViewer extends State<ExpensesListViewer>{
       CloudFirestore.deleteExpense(expense);
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("${expense.description} ${Constants.deleted}"),
-        action: SnackBarAction(
-          label: Constants.undo,
-          onPressed: () {
-            setState(() async {
-              await CloudFirestore.addExpense(expense);
-            });
-          },
-        ),
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text("${expense.description} ${Constants.deleted}"),
+    //     action: SnackBarAction(
+    //       label: Constants.undo,
+    //       onPressed: () {
+    //         setState(() async {
+    //           await CloudFirestore.addExpense(expense);
+    //         });
+    //       },
+    //     ),
+    //   ),
+    // );
   }
 
   void _showConfirmationDialog(BuildContext context, Expense expense) {
