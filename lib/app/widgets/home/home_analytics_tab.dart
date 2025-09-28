@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import 'custom_dropdown.dart';
+import 'labled_switch.dart';
+
 class MonthlyExpenseStatistics extends StatefulWidget {
   final User user;
 
@@ -19,6 +22,7 @@ class MonthlyExpenseStatistics extends StatefulWidget {
 class _MonthlyExpenseStatistics extends State<MonthlyExpenseStatistics> {
   int _touchedIndex = -1;
   int selectedYear = DateTime.now().year;
+  bool showFutureExpenses = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +43,32 @@ class _MonthlyExpenseStatistics extends State<MonthlyExpenseStatistics> {
 
         List<int> availableYears = _getAvailableYears(expenses);
 
-        List<Expense> filteredExpenses = expenses
-            .where((e) => e.timestamp.toDate().year == selectedYear)
-            .toList();
+        List<Expense> filteredExpenses = expenses.where((e) {
+          final date = e.timestamp.toDate();
+          if (showFutureExpenses) {
+            // Show all months in the selected year
+            return date.year == selectedYear;
+          } else {
+            // Only months up to current month
+            return date.year == selectedYear && date.month <= DateTime.now().month;
+          }
+        }).toList();
 
         if (filteredExpenses.isEmpty) {
           return Column(
             children: [
-              _buildYearDropdown(availableYears),
+              CustomDropdown<int>(
+                selectedValue: selectedYear,
+                items: availableYears,
+                labelText: "Year",
+                onChanged: (year) {
+                  if (year != null) {
+                    setState(() {
+                      selectedYear = year;
+                    });
+                  }
+                },
+              ),
               Expanded(
                 child: Center(child: Text('No expenses for $selectedYear')),
               ),
@@ -58,47 +80,66 @@ class _MonthlyExpenseStatistics extends State<MonthlyExpenseStatistics> {
         double totalForYear = filteredExpenses.fold(0.0, (sum, e) => sum + e.amount);
 
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildYearDropdown(availableYears),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Text(
-                'Total for $selectedYear: \$${totalForYear.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                children: [
+                  // Year Dropdown
+                  CustomDropdown<int>(
+                    selectedValue: selectedYear,
+                    items: availableYears,
+                    labelText: "Year",
+                    onChanged: (year) {
+                      if (year != null) {
+                        setState(() {
+                          selectedYear = year;
+                        });
+                      }
+                    },
+                  ),
+
+                  // Show future expenses checkbox
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: LabeledCheckbox(
+                      value: showFutureExpenses,
+                      onChanged: (val) {
+                        setState(() {
+                          showFutureExpenses = val ?? false;
+                        });
+                      },
+                      label: "future",
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    ),
+                  ),
+
+                  // Total display
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      "Total: \$${totalForYear.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+
             Expanded(child: _buildPieChart(monthlyExpenses)),
           ],
         );
-      },
-    );
-  }
 
-  /// Dropdown UI to pick a year
-  Widget _buildYearDropdown(List<int> years) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: DropdownButton<int>(
-        value: selectedYear,
-        onChanged: (int? year) {
-          if (year != null) {
-            setState(() {
-              selectedYear = year;
-            });
-          }
-        },
-        items: years
-            .map((year) => DropdownMenuItem(
-          value: year,
-          child: Text('$year'),
-        ))
-            .toList(),
-        underline: Container(height: 2, color: Colors.blueAccent),
-      ),
+      },
     );
   }
 

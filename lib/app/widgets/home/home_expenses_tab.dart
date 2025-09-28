@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'confirmation_dialog.dart';
+import 'custom_dropdown.dart';
 import 'edit_expense_dialog.dart';
 
 class ExpensesListViewer extends StatefulWidget {
@@ -158,48 +159,21 @@ class _ExpensesListViewer extends State<ExpensesListViewer> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Year selector
-                  SizedBox(
-                    width: 100,
-                    child: DropdownButtonFormField<int>(
-                      value: selectedYear,
-                      decoration: const InputDecoration(
-                        labelText: "Year",
-                        border: OutlineInputBorder(),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      onChanged: (year) => _changeYear(year, expenses),
-                      items: availableYears
-                          .map((year) => DropdownMenuItem(
-                                value: year,
-                                child: Text("$year"),
-                              ))
-                          .toList(),
-                    ),
+                  CustomDropdown<int>(
+                    selectedValue: selectedYear,
+                    items: availableYears,
+                    labelText: "Year",
+                    onChanged: (year) => _changeYear(year, expenses),
                   ),
 
-                  const SizedBox(width: 16),
+                  const Spacer(),
 
-                  // Month selector
-                  SizedBox(
-                    width: 100,
-                    child: DropdownButtonFormField<int>(
-                      value: selectedMonth,
-                      decoration: const InputDecoration(
-                        labelText: "Month",
-                        border: OutlineInputBorder(),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      onChanged: _changeMonth,
-                      items: availableMonths
-                          .map((month) => DropdownMenuItem(
-                                value: month,
-                                child: Text(month.toString().padLeft(2, '0')),
-                              ))
-                          .toList(),
-                    ),
+                  CustomDropdown<int>(
+                    selectedValue: selectedMonth,
+                    items: availableMonths,
+                    labelText: "Month",
+                    itemLabel: (month) => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month-1],
+                    onChanged: (month) => _changeMonth(month),
                   ),
 
                   const Spacer(),
@@ -208,15 +182,15 @@ class _ExpensesListViewer extends State<ExpensesListViewer> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.blueAccent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       "Total: \$${total.toStringAsFixed(2)}",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: Colors.blueAccent,
+                        color: Colors.black87,
                       ),
                     ),
                   ),
