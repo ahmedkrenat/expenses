@@ -73,7 +73,8 @@ class _ExpensesListViewer extends State<ExpensesListViewer> {
   }
 
   List<int> getAvailableYears(List<Expense> expenses) {
-    final years = expenses.map((e) => e.timestamp.toDate().year).toSet().toList();
+    final years =
+        expenses.map((e) => e.timestamp.toDate().year).toSet().toList();
     years.sort((a, b) => b.compareTo(a)); // Descending
     return years;
   }
@@ -88,19 +89,19 @@ class _ExpensesListViewer extends State<ExpensesListViewer> {
     return months;
   }
 
-  void _changeYear(int? year, List<int> availableMonths) {
+  void _changeYear(int? year, List<Expense> expenses) {
     if (year != null) {
       setState(() {
         selectedYear = year;
-        if (!availableMonths.contains(selectedMonth)) {
-          if (availableMonths.isNotEmpty) {
-            selectedMonth = availableMonths.first;
-          } else {
-            // No months available in the selected year
-            selectedMonth = 1;
-          }
-        }
 
+        // recompute available months for this new year
+        List<int> availableMonths = getAvailableMonths(expenses, selectedYear);
+
+        // if current selectedMonth not in new year's months → fallback
+        if (!availableMonths.contains(selectedMonth)) {
+          selectedMonth =
+              availableMonths.isNotEmpty ? availableMonths.first : 1;
+        }
       });
     }
   }
@@ -139,7 +140,8 @@ class _ExpensesListViewer extends State<ExpensesListViewer> {
 
         // Auto-fix selectedMonth if not available
         if (!availableMonths.contains(selectedMonth)) {
-          selectedMonth = availableMonths.isNotEmpty ? availableMonths.first : 1;
+          selectedMonth =
+              availableMonths.isNotEmpty ? availableMonths.first : 1;
         }
 
         List<Expense> filteredExpenses = expenses.where((e) {
@@ -152,89 +154,133 @@ class _ExpensesListViewer extends State<ExpensesListViewer> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(12.0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  DropdownButton<int>(
-                    value: selectedYear,
-                    onChanged: (year) => _changeYear(year, availableMonths),
-                    items: availableYears.map((year) {
-                      return DropdownMenuItem(
-                        value: year,
-                        child: Text('$year'),
-                      );
-                    }).toList(),
+                  // Year selector
+                  SizedBox(
+                    width: 100,
+                    child: DropdownButtonFormField<int>(
+                      value: selectedYear,
+                      decoration: const InputDecoration(
+                        labelText: "Year",
+                        border: OutlineInputBorder(),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      onChanged: (year) => _changeYear(year, expenses),
+                      items: availableYears
+                          .map((year) => DropdownMenuItem(
+                                value: year,
+                                child: Text("$year"),
+                              ))
+                          .toList(),
+                    ),
                   ),
+
                   const SizedBox(width: 16),
-                  DropdownButton<int>(
-                    value: selectedMonth,
-                    onChanged: _changeMonth,
-                    items: availableMonths.map((month) {
-                      return DropdownMenuItem(
-                        value: month,
-                        child: Text(
-                          '${month.toString().padLeft(2, '0')}',
-                        ),
-                      );
-                    }).toList(),
+
+                  // Month selector
+                  SizedBox(
+                    width: 100,
+                    child: DropdownButtonFormField<int>(
+                      value: selectedMonth,
+                      decoration: const InputDecoration(
+                        labelText: "Month",
+                        border: OutlineInputBorder(),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      onChanged: _changeMonth,
+                      items: availableMonths
+                          .map((month) => DropdownMenuItem(
+                                value: month,
+                                child: Text(month.toString().padLeft(2, '0')),
+                              ))
+                          .toList(),
+                    ),
                   ),
+
                   const Spacer(),
-                  Text(
-                    'Total: \$${total.toStringAsFixed(2)}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+
+                  // Total
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "Total: \$${total.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
                   ),
+
                 ],
               ),
             ),
             Expanded(
               child: filteredExpenses.isEmpty
-                  ? Center(child: Text('No expenses for $selectedMonth/$selectedYear'))
+                  ? Center(
+                      child:
+                          Text('No expenses for $selectedMonth/$selectedYear'))
                   : ListView.builder(
-                itemCount: filteredExpenses.length,
-                itemBuilder: (context, index) {
-                  final expense = filteredExpenses[index];
+                      itemCount: filteredExpenses.length,
+                      itemBuilder: (context, index) {
+                        final expense = filteredExpenses[index];
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    child: Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 1.0),
-                        leading: const Icon(
-                          Icons.monetization_on,
-                          color: Colors.green,
-                        ),
-                        title: Text(
-                          expense.description,
-                          style: Constants.itemDescTextStyle,
-                        ),
-                        subtitle: Text(
-                          '\$${expense.amount.toStringAsFixed(2)}',
-                          style: Constants.itemAmountTextStyle,
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit, color: Colors.indigo.shade400),
-                              onPressed: () => _editExpense(context, expense),
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0, vertical: 4.0),
+                          child: Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red.shade400),
-                              onPressed: () => _showConfirmationDialog(context, expense),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 1.0),
+                              leading: const Icon(
+                                Icons.monetization_on,
+                                color: Colors.green,
+                              ),
+                              title: Text(
+                                expense.description,
+                                style: Constants.itemDescTextStyle,
+                              ),
+                              subtitle: Text(
+                                '\$${expense.amount.toStringAsFixed(2)}',
+                                style: Constants.itemAmountTextStyle,
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit,
+                                        color: Colors.indigo.shade400),
+                                    onPressed: () =>
+                                        _editExpense(context, expense),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete,
+                                        color: Colors.red.shade400),
+                                    onPressed: () => _showConfirmationDialog(
+                                        context, expense),
+                                  ),
+                                ],
+                              ),
+                              onTap: () =>
+                                  _showExpenseDetails(context, expense),
                             ),
-                          ],
-                        ),
-                        onTap: () => _showExpenseDetails(context, expense),
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         );
