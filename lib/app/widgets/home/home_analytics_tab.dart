@@ -18,31 +18,98 @@ class MonthlyExpenseStatistics extends StatefulWidget {
 
 class _MonthlyExpenseStatistics extends State<MonthlyExpenseStatistics> {
   int _touchedIndex = -1;
+  int selectedYear = DateTime.now().year;
 
   @override
   Widget build(BuildContext context) {
-
     return StreamBuilder<QuerySnapshot>(
-        stream: CloudFirestore.getExpensesStream(widget.user),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text(Constants.noExpensesFound));
-          }
-
-          List<Expense> expenses = snapshot.data!.docs
-              .map((doc) => Expense.fromDocument(doc))
-              .toList();
-
-          Map<String, double> monthlyExpenses = _calculateMonthlyExpenses(expenses);
-          return _buildPieChart(monthlyExpenses);
+      stream: CloudFirestore.getExpensesStream(widget.user),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
         }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text(Constants.noExpensesFound));
+        }
+
+        List<Expense> expenses = snapshot.data!.docs
+            .map((doc) => Expense.fromDocument(doc))
+            .toList();
+
+        List<int> availableYears = _getAvailableYears(expenses);
+
+        List<Expense> filteredExpenses = expenses
+            .where((e) => e.timestamp.toDate().year == selectedYear)
+            .toList();
+
+        if (filteredExpenses.isEmpty) {
+          return Column(
+            children: [
+              _buildYearDropdown(availableYears),
+              Expanded(
+                child: Center(child: Text('No expenses for $selectedYear')),
+              ),
+            ],
+          );
+        }
+
+        Map<String, double> monthlyExpenses = _calculateMonthlyExpenses(filteredExpenses);
+        double totalForYear = filteredExpenses.fold(0.0, (sum, e) => sum + e.amount);
+
+        return Column(
+          children: [
+            _buildYearDropdown(availableYears),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Total for $selectedYear: \$${totalForYear.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            Expanded(child: _buildPieChart(monthlyExpenses)),
+          ],
+        );
+      },
     );
   }
 
+  /// Dropdown UI to pick a year
+  Widget _buildYearDropdown(List<int> years) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: DropdownButton<int>(
+        value: selectedYear,
+        onChanged: (int? year) {
+          if (year != null) {
+            setState(() {
+              selectedYear = year;
+            });
+          }
+        },
+        items: years
+            .map((year) => DropdownMenuItem(
+          value: year,
+          child: Text('$year'),
+        ))
+            .toList(),
+        underline: Container(height: 2, color: Colors.blueAccent),
+      ),
+    );
+  }
+
+  /// Extract unique years from all expenses
+  List<int> _getAvailableYears(List<Expense> expenses) {
+    final years = expenses.map((e) => e.timestamp.toDate().year).toSet().toList();
+    years.sort((a, b) => b.compareTo(a)); // Descending
+    return years;
+  }
+
+  /// Sum expenses grouped by Month (in selected year)
   Map<String, double> _calculateMonthlyExpenses(List<Expense> expenses) {
     Map<String, double> monthlyExpenses = {};
 
@@ -64,7 +131,6 @@ class _MonthlyExpenseStatistics extends State<MonthlyExpenseStatistics> {
     List<PieChartSectionData> sections = [];
     double totalExpenses = monthlyExpenses.values.reduce((a, b) => a + b);
 
-    // Convert entries to a list and sort them
     var sortedEntries = monthlyExpenses.entries.toList()
       ..sort((a, b) => DateFormat.yMMM().parse(a.key).compareTo(DateFormat.yMMM().parse(b.key)));
 
@@ -77,7 +143,7 @@ class _MonthlyExpenseStatistics extends State<MonthlyExpenseStatistics> {
       sections.add(
         PieChartSectionData(
           value: entry.value,
-          title: '${entry.value.toStringAsFixed(0)} ',
+          title: '${entry.value.toStringAsFixed(0)}',
           radius: radius,
           titleStyle: TextStyle(
             fontSize: fontSize,
@@ -100,13 +166,7 @@ class _MonthlyExpenseStatistics extends State<MonthlyExpenseStatistics> {
           sectionsSpace: 4,
           pieTouchData: PieTouchData(
             touchCallback: (FlTouchEvent event, PieTouchResponse? pieTouchResponse) {
-              // setState(() {
-              //   if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
-              //     _touchedIndex = -1;
-              //     return;
-              //   }
-              //   _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
-              // });
+              // Touch disabled
             },
           ),
         ),
@@ -139,7 +199,6 @@ class _MonthlyExpenseStatistics extends State<MonthlyExpenseStatistics> {
   }
 
   Color _getColorForMonth(String month) {
-    // Assign colors for different months
     switch (month) {
       case 'Jan':
         return Colors.red;
